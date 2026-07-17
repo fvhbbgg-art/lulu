@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>هاناكو - صديقتك دائماً</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  font-family:'Tajawal',sans-serif;
+  background: #0a0015;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+
+/* Ambient background */
+.bg-glow {
+  position:fixed;
+  border-radius:50%;
+  filter:blur(80px);
+  pointer-events:none;
+  z-index:0;
+  transition: all 2s ease;
+}
+.bg-glow-1 { width:400px;height:400px;background:rgba(180,100,255,0.12);top:-100px;right:-100px; }
+.bg-glow-2 { width:350px;height:350px;background:rgba(255,100,180,0.08);bottom:-80px;left:-80px; }
+.bg-glow-3 { width:250px;height:250px;background:rgba(100,200,255,0.06);top:40%;left:30%; }
+
+/* Sakura petals */
+.petal {
+  position:fixed;
+  pointer-events:none;
+  z-index:1;
+  font-size:16px;
+  animation: petalFall linear infinite;
+  opacity:0;
+}
+@keyframes petalFall {
+  0%   { transform:translateY(-20px) rotate(0deg);   opacity:0; }
+  10%  { opacity:0.7; }
+  90%  { opacity:0.4; }
+  100% { transform:translateY(110vh) rotate(720deg); opacity:0; }
+}
+
+.app {
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:400px;
+  padding:24px 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* Title */
+.subtitle {
+  color:rgba(255,200,230,0.5);
+  font-size:11px;
+  letter-spacing:4px;
+  font-weight:300;
+  margin-bottom:20px;
+  text-align:center;
+}
+
+/* ── ANIME CHARACTER ── */
+.char-wrap {
+  position:relative;
+  width:220px;
+  height:260px;
+  margin:0 auto;
+}
+
+/* Glow rings around character */
+.ring {
+  position:absolute;
+  border-radius:50%;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  border:1px solid;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.5s;
+}
+.ring-1{width:230px;height:230px;border-color:rgba(220,150,255,0.5);}
+.ring-2{width:265px;height:265px;border-color:rgba(255,150,200,0.3);}
+.ring-3{width:300px;height:300px;border-color:rgba(200,150,255,0.15);}
+
+@keyframes ringSpeak { 0%{transform:translate(-50%,-50%) scale(1);opacity:0.9;} 100%{transform:translate(-50%,-50%) scale(1.2);opacity:0;} }
+@keyframes ringListen { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.6;} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:1;} }
+
+/* Floating emotion tag */
+.emo-tag {
+  position:absolute;
+  top:0; right:-10px;
+  background:rgba(255,255,255,0.95);
+  border-radius:18px 18px 18px 4px;
+  padding:7px 12px;
+  font-size:20px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+  z-index:10;
+  animation:tagFloat 4s ease-in-out infinite;
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes tagFloat { 0%,100%{transform:translateY(0) rotate(3deg);} 50%{transform:translateY(-10px) rotate(-3deg);} }
+
+/* SVG Character */
+.char-svg {
+  width:220px;
+  height:260px;
+  filter:drop-shadow(0 0 25px rgba(200,120,255,0.4));
+  transition:filter 0.6s ease;
+}
+
+/* idle breathing */
+@keyframes breathe { 0%,100%{transform:scaleY(1);} 50%{transform:scaleY(1.015);} }
+.char-body-group { animation:breathe 3s ease-in-out infinite; transform-origin:bottom center; }
+
+/* bounce */
+@keyframes charBounce { 0%,100%{transform:translateY(0);} 30%{transform:translateY(-12px);} 60%{transform:translateY(-5px);} }
+.do-bounce { animation:charBounce 0.7s ease; }
+
+/* Name */
+.char-name {
+  color:white;
+  font-size:26px;
+  font-weight:800;
+  text-align:center;
+  margin-top:10px;
+  letter-spacing:6px;
+  text-shadow:0 0 30px rgba(220,150,255,0.9), 0 0 60px rgba(220,150,255,0.4);
+}
+
+/* Mood text */
+.mood-text {
+  color:rgba(255,200,230,0.8);
+  font-size:13px;
+  text-align:center;
+  margin-top:5px;
+  min-height:20px;
+  transition:all 0.5s ease;
+  font-weight:300;
+  letter-spacing:1px;
+}
+
+/* Sound waves */
+.waves {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  height:44px;
+  margin:14px 0 4px;
+  opacity:0;
+  transition:opacity 0.4s;
+}
+.waves.on { opacity:1; }
+.wb {
+  width:3px;
+  border-radius:4px;
+  background:linear-gradient(to top, #b04fff, #ff6eb4);
+  animation:wb var(--d,0.8s) ease-in-out infinite;
+  animation-delay:var(--delay,0s);
+}
+@keyframes wb { 0%,100%{height:4px;} 50%{height:var(--h,28px);} }
+
+/* Status */
+.status-text {
+  color:rgba(255,180,220,0.45);
+  font-size:11px;
+  text-align:center;
+  min-height:18px;
+  letter-spacing:2px;
+  transition:all 0.3s;
+  margin-bottom:18px;
+}
+
+/* MIC BUTTON */
+.mic-wrap {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.mic-btn {
+  width:85px; height:85px;
+  border-radius:50%;
+  border:none;
+  cursor:pointer;
+  background:linear-gradient(135deg,#8b2cf5,#d46ef9,#ff6eb4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 8px 30px rgba(140,50,255,0.5), 0 0 0 0 rgba(212,110,249,0.3);
+  transition:all 0.3s ease;
+  z-index:2;
+}
+.mic-btn:hover { transform:scale(1.08); }
+.mic-btn:active { transform:scale(0.94); }
+.mic-btn.on {
+  animation:micPulse 1.2s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%,100%{ box-shadow:0 8px 30px rgba(255,100,180,0.7), 0 0 0 0 rgba(255,110,180,0.4); }
+  50%{ box-shadow:0 8px 30px rgba(255,100,180,0.7), 0 0 0 24px rgba(255,110,180,0); }
+}
+.mic-btn svg { width:36px;height:36px;fill:white; }
+
+/* Transcript */
+.transcript {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(200,130,255,0.2);
+  backdrop-filter:blur(12px);
+  border-radius:22px;
+  padding:14px 18px;
+  margin-top:18px;
+  width:100%;
+  min-height:58px;
+  color:rgba(255,230,245,0.95);
+  font-size:14px;
+  line-height:1.8;
+  text-align:center;
+  transition:all 0.4s ease;
+  opacity:0;
+  transform:translateY(8px);
+}
+.transcript.show { opacity:1; transform:translateY(0); }
+.t-speaker {
+  font-size:10px;
+  color:rgba(210,140,255,0.8);
+  font-weight:600;
+  letter-spacing:2px;
+  margin-bottom:5px;
+}
+
+.hint {
+  color:rgba(255,180,220,0.2);
+  font-size:11px;
+  text-align:center;
+  margin-top:14px;
+  letter-spacing:1px;
+}
+
+/* Particles */
+.spark {
+  position:fixed;
+  pointer-events:none;
+  font-size:18px;
+  animation:sparkUp 2.5s ease-out forwards;
+  z-index:99;
+}
+@keyframes sparkUp { 0%{opacity:1;transform:translateY(0) scale(1) rotate(0deg);} 100%{opacity:0;transform:translateY(-150px) scale(0.2) rotate(360deg);} }
+
+/* Tears element */
+#tears { opacity:0; transition:opacity 0.8s ease; }
+#sparkles { transition:opacity 0.6s ease; }
+.blush { transition:opacity 0.5s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+</style>
+</head>
+<body>
+
+<div class="bg-glow bg-glow-1" id="glow1"></div>
+<div class="bg-glow bg-glow-2" id="glow2"></div>
+<div class="bg-glow bg-glow-3"></div>
+
+<div class="app">
+  <div class="subtitle">✦ أنا هنا معك دائماً ✦</div>
+
+  <div class="char-wrap" id="charWrap">
+    <div class="ring ring-1" id="ring1"></div>
+    <div class="ring ring-2" id="ring2"></div>
+    <div class="ring ring-3" id="ring3"></div>
+
+    <div class="emo-tag" id="emoTag">🌸</div>
+
+    <!-- ANIME SVG CHARACTER -->
+    <svg class="char-svg" viewBox="0 0 220 260" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="skinGrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stop-color="#ffe8d6"/>
+          <stop offset="100%" stop-color="#ffd0b0"/>
+        </radialGradient>
+        <radialGradient id="hairGrad" cx="50%" cy="30%" r="60%">
+          <stop offset="0%" stop-color="#c084fc"/>
+          <stop offset="60%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#4c1d95"/>
+        </radialGradient>
+        <radialGradient id="eyeGrad" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#c084fc"/>
+          <stop offset="50%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#2e1065"/>
+        </radialGradient>
+        <linearGradient id="dressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e879f9"/>
+          <stop offset="100%" stop-color="#a855f7"/>
+        </linearGradient>
+        <filter id="softGlow">
+          <feGaussianBlur stdDeviation="2" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <g class="char-body-group">
+        <!-- Shadow -->
+        <ellipse cx="110" cy="252" rx="45" ry="8" fill="rgba(0,0,0,0.2)"/>
+
+        <!-- Dress / Body -->
+        <path d="M68 180 Q75 230 80 255 L140 255 Q145 230 152 180 Q130 195 110 195 Q90 195 68 180Z" fill="url(#dressGrad)"/>
+        <!-- Dress highlight -->
+        <path d="M80 190 Q95 205 110 205 Q125 205 140 190 Q130 200 110 200 Q90 200 80 190Z" fill="rgba(255,255,255,0.15)"/>
+        <!-- Dress bow -->
+        <path d="M98 188 Q110 178 122 188 L118 196 Q110 190 102 196Z" fill="#f0abfc"/>
+        <circle cx="110" cy="193" r="5" fill="#e879f9"/>
+        <circle cx="110" cy="193" r="3" fill="#fce7f3"/>
+
+        <!-- Collar -->
+        <path d="M88 175 Q110 185 132 175 L128 182 Q110 190 92 182Z" fill="#f5d0fe" opacity="0.8"/>
+
+        <!-- Neck -->
+        <rect x="103" y="163" width="14" height="16" rx="5" fill="url(#skinGrad)"/>
+
+        <!-- HAIR BACK (behind head) -->
+        <ellipse cx="110" cy="120" rx="55" ry="52" fill="url(#hairGrad)" opacity="0.95"/>
+        <!-- Side hair strands -->
+        <path d="M58 115 Q42 145 48 190 Q52 210 58 220" stroke="#6d28d9" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path d="M162 115 Q178 145 172 190 Q168 210 162 220" stroke="#6d28d9" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- Hair shine -->
+        <ellipse cx="95" cy="88" rx="12" ry="7" fill="rgba(255,255,255,0.18)" transform="rotate(-20,95,88)"/>
+
+        <!-- HEAD -->
+        <ellipse cx="110" cy="120" rx="50" ry="48" fill="url(#skinGrad)"/>
+
+        <!-- EARS -->
+        <ellipse cx="60" cy="120" rx="8" ry="11" fill="#ffd0b0"/>
+        <ellipse cx="60" cy="120" rx="5" ry="7" fill="#ffb8a0" opacity="0.5"/>
+        <ellipse cx="160" cy="120" rx="8" ry="11" fill="#ffd0b0"/>
+        <ellipse cx="160" cy="120" rx="5" ry="7" fill="#ffb8a0" opacity="0.5"/>
+
+        <!-- Hair front / bangs -->
+        <path d="M62 100 Q75 60 110 58 Q145 60 158 100" fill="url(#hairGrad)"/>
+        <path d="M62 100 Q68 80 80 75 Q72 95 70 110Z" fill="#5b21b6"/>
+        <path d="M158 100 Q152 80 140 75 Q148 95 150 110Z" fill="#5b21b6"/>
+        <!-- Center bang -->
+        <path d="M95 62 Q110 55 125 62 Q118 85 110 90 Q102 85 95 62Z" fill="#6d28d9"/>
+
+        <!-- Hair accessories - star pins -->
+        <g filter="url(#softGlow)">
+          <polygon points="78,72 80,78 86,78 81,82 83,88 78,84 73,88 75,82 70,78 76,78" fill="#f0abfc" opacity="0.9"/>
+          <polygon points="142,72 144,78 150,78 145,82 147,88 142,84 137,88 139,82 134,78 140,78" fill="#f0abfc" opacity="0.9"/>
+        </g>
+
+        <!-- BLUSH -->
+        <ellipse class="blush" id="blushL" cx="80" cy="130" rx="14" ry="9" fill="#ffb3c6" opacity="0.45"/>
+        <ellipse class="blush" id="blushR" cx="140" cy="130" rx="14" ry="9" fill="#ffb3c6" opacity="0.45"/>
+
+        <!-- EYEBROWS -->
+        <path id="browL" d="M85 98 Q95 93 105 97" stroke="#4c1d95" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path id="browR" d="M115 97 Q125 93 135 98" stroke="#4c1d95" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- EYE WHITES -->
+        <ellipse cx="94" cy="112" rx="14" ry="16" fill="white"/>
+        <ellipse cx="126" cy="112" rx="14" ry="16" fill="white"/>
+
+        <!-- EYELASHES top -->
+        <path d="M80 103 Q82 99 86 102" stroke="#2e1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M88 100 Q90 96 93 99" stroke="#2e1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M98 99 Q101 95 104 98" stroke="#2e1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M116 98 Q119 95 122 99" stroke="#2e1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M127 99 Q130 96 132 100" stroke="#2e1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M134 102 Q138 99 140 103" stroke="#2e1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- PUPILS -->
+        <g id="eyesGroup">
+          <!-- Left eye -->
+          <ellipse cx="94" cy="113" rx="10" ry="12" fill="url(#eyeGrad)"/>
+          <ellipse cx="94" cy="112" rx="7" ry="9" fill="#7c3aed"/>
+          <circle cx="94" cy="110" r="3" fill="#a78bfa" opacity="0.6"/>
+          <!-- shine dots -->
+          <circle cx="99" cy="106" r="3" fill="white"/>
+          <circle cx="89" cy="109" r="1.5" fill="white" opacity="0.7"/>
+          <!-- Right eye -->
+          <ellipse cx="126" cy="113" rx="10" ry="12" fill="url(#eyeGrad)"/>
+          <ellipse cx="126" cy="112" rx="7" ry="9" fill="#7c3aed"/>
+          <circle cx="126" cy="110" r="3" fill="#a78bfa" opacity="0.6"/>
+          <circle cx="131" cy="106" r="3" fill="white"/>
+          <circle cx="121" cy="109" r="1.5" fill="white" opacity="0.7"/>
+        </g>
+
+        <!-- Bottom eyelashes -->
+        <path d="M82 122 Q80 126 82 128" stroke="#c084fc" stroke-width="1.2" fill="none" opacity="0.6"/>
+        <path d="M88 125 Q87 129 89 131" stroke="#c084fc" stroke-width="1.2" fill="none" opacity="0.6"/>
+        <path d="M112 125 Q111 129 113 131" stroke="#c084fc" stroke-width="1.2" fill="none" opacity="0.6"/>
+        <path d="M118 122 Q120 126 118 128" stroke="#c084fc" stroke-width="1.2" fill="none" opacity="0.6"/>
+
+        <!-- TEARS -->
+        <g id="tears">
+          <ellipse cx="76" cy="132" rx="4" ry="6" fill="#93c5fd" opacity="0.85"/>
+          <path d="M76 138 Q74 145 77 150" stroke="#60a5fa" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <ellipse cx="144" cy="132" rx="4" ry="6" fill="#93c5fd" opacity="0.85"/>
+          <path d="M144 138 Q142 145 145 150" stroke="#60a5fa" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- NOSE -->
+        <path d="M107 133 Q110 137 113 133" stroke="#e8a090" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+
+        <!-- MOUTH -->
+        <path id="mouth" d="M98 145 Q110 155 122 145" stroke="#e879f9" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Sparkles -->
+        <g id="sparkles">
+          <text x="22" y="72" font-size="16" opacity="0.8">✨</text>
+          <text x="178" y="72" font-size="16" opacity="0.8">✨</text>
+        </g>
+
+        <!-- ARMS -->
+        <path d="M68 180 Q50 175 40 162" stroke="url(#skinGrad)" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path id="armRight" d="M152 180 Q170 175 180 162" stroke="url(#skinGrad)" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- Hands -->
+        <ellipse cx="37" cy="159" rx="9" ry="8" fill="#ffd0b0"/>
+        <ellipse cx="183" cy="159" rx="9" ry="8" fill="#ffd0b0"/>
+
+        <!-- Sleeve ruffles -->
+        <path d="M60 177 Q55 185 52 180" stroke="#f0abfc" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M160 177 Q165 185 168 180" stroke="#f0abfc" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+        <!-- PHONE (shown when video suggestion available) -->
+        <g id="phoneGroup" opacity="0" style="transition:opacity 0.7s ease">
+          <rect x="154" y="142" width="40" height="66" rx="6" fill="#1a1a2e" stroke="#c084fc" stroke-width="1.5"/>
+          <rect x="157" y="147" width="34" height="52" rx="3" fill="#0f0f1a"/>
+          <rect x="157" y="150" width="34" height="24" rx="2" fill="#cc0000" id="ytThumbBg"/>
+          <polygon id="ytPlay" points="167,157 167,169 179,163" fill="white" opacity="0.95"/>
+          <rect x="159" y="178" width="26" height="2.5" rx="1" fill="#7c3aed" opacity="0.8"/>
+          <rect x="159" y="183" width="20" height="2" rx="1" fill="#555577"/>
+          <rect x="159" y="188" width="22" height="2" rx="1" fill="#555577"/>
+          <circle cx="174" cy="202" r="3.5" fill="#2a2a4a"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- YouTube suggestion card -->
+  <div id="ytCard" style="display:none;width:100%;max-width:340px;margin-top:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(192,132,252,0.3);border-radius:18px;overflow:hidden;animation:slideUp 0.5s ease;cursor:pointer;" onclick="openVideo()">
+    <div style="background:#cc0000;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="white"><path d="M21.5 2.5s-.2-1.5-.9-2.1c-.8-.9-1.8-.9-2.2-1C15.8 0 11 0 11 0S6.2 0 3.6.4c-.4.1-1.4.1-2.2 1C.7 2 .5 3.5.5 3.5S.3 5.2.3 7v1.8c0 1.8.2 3.5.2 3.5s.2 1.5.9 2.1c.8.9 1.9.8 2.4.9C5.4 15.5 11 15.5 11 15.5s4.8 0 7.4-.4c.4-.1 1.4-.1 2.2-1 .7-.6.9-2.1.9-2.1s.2-1.7.2-3.5V7c0-1.8-.2-3.5-.2-3.5zM8.8 10.7V4.5l6 3.1-6 3.1z"/></svg>
+      <span style="color:white;font-size:12px;font-weight:700;letter-spacing:1px;font-family:'Tajawal',sans-serif;">هاناكو تقترح عليك 🌸</span>
+    </div>
+    <div style="padding:12px 14px;display:flex;gap:10px;align-items:center;">
+      <div id="ytThumbnail" style="width:70px;height:50px;border-radius:8px;background:#1a1a2e;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;">🎵</div>
+      <div style="flex:1;min-width:0;">
+        <div id="ytTitle" style="color:white;font-size:13px;font-weight:600;font-family:'Tajawal',sans-serif;line-height:1.4;margin-bottom:4px;">...</div>
+        <div id="ytDesc" style="color:rgba(200,150,255,0.7);font-size:11px;font-family:'Tajawal',sans-serif;">اضغط للمشاهدة على يوتيوب ▶</div>
+      </div>
+    </div>
+  </div>
+  <div class="mood-text" id="moodText">اضغط وكلّمني... أنا أسمعك 🌸</div>
+
+  <div class="waves" id="waves">
+    <div class="wb" style="--d:0.5s;--h:14px;--delay:0s"></div>
+    <div class="wb" style="--d:0.7s;--h:30px;--delay:0.1s"></div>
+    <div class="wb" style="--d:0.6s;--h:22px;--delay:0.05s"></div>
+    <div class="wb" style="--d:0.9s;--h:38px;--delay:0.15s"></div>
+    <div class="wb" style="--d:0.5s;--h:18px;--delay:0.2s"></div>
+    <div class="wb" style="--d:0.8s;--h:34px;--delay:0.08s"></div>
+    <div class="wb" style="--d:0.6s;--h:20px;--delay:0.18s"></div>
+    <div class="wb" style="--d:0.7s;--h:28px;--delay:0.12s"></div>
+    <div class="wb" style="--d:0.5s;--h:14px;--delay:0.22s"></div>
+  </div>
+
+  <div class="status-text" id="statusTxt">اضغط المايك وابدأ الكلام</div>
+
+  <button class="mic-btn" id="micBtn" onclick="toggleListen()">
+    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93H2c0 4.97 3.58 9.09 8.5 9.93V21h3v-2.07C18.42 18.09 22 13.97 22 9h-2c0 4.08-3.06 7.44-7 7.93V16h-2v-.07z"/></svg>
+  </button>
+
+  <div class="transcript" id="transcript">
+    <div class="t-speaker" id="tSpeaker">أنت</div>
+    <div id="tText"></div>
+  </div>
+
+  <div class="hint">اضغط مرة ثانية لإيقاف الاستماع 🎙️</div>
+</div>
+
+<script>
+// ── Sakura petals ──────────────────────────────────────
+const petalEmojis = ['🌸','🌺','✿','❀'];
+for(let i=0;i<12;i++){
+  const p = document.createElement('div');
+  p.className = 'petal';
+  p.textContent = petalEmojis[i%petalEmojis.length];
+  p.style.cssText = `left:${Math.random()*100}%;font-size:${10+Math.random()*12}px;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s`;
+  document.body.appendChild(p);
+}
+
+// ── Emotions ───────────────────────────────────────────
+const EMO = {
+  happy:   {tag:'😊', mood:'قلبي يفرح لما أشوفك سعيد~ 🌟',
+             mouth:'M96 143 Q110 158 124 143',
+             browL:'M85 96 Q95 90 105 95', browR:'M115 95 Q125 90 135 96',
+             blush:0.75, tears:false, sparkle:true, glowColor:'rgba(255,200,100,0.15)'},
+  sad:     {tag:'🥺', mood:'قلبي وجع معك... ما أنت لحالك 💙',
+             mouth:'M98 152 Q110 143 122 152',
+             browL:'M85 100 Q95 106 105 100', browR:'M115 100 Q125 106 135 100',
+             blush:0.2, tears:true, sparkle:false, glowColor:'rgba(100,150,255,0.12)'},
+  empathy: {tag:'🫂', mood:'أنا أحس فيك... تكلمني أكثر 💜',
+             mouth:'M99 147 Q110 153 121 147',
+             browL:'M85 98 Q95 95 105 97', browR:'M115 97 Q125 95 135 98',
+             blush:0.55, tears:false, sparkle:false, glowColor:'rgba(180,100,255,0.13)'},
+  excited: {tag:'🤩', mood:'واو واو واو!! هذا شيء رائع جداً~ ✨',
+             mouth:'M93 143 Q110 162 127 143',
+             browL:'M85 93 Q95 87 105 92', browR:'M115 92 Q125 87 135 93',
+             blush:0.9, tears:false, sparkle:true, glowColor:'rgba(255,150,50,0.15)'},
+  worried: {tag:'😟', mood:'صج؟ هذا يخوّفني عليك...',
+             mouth:'M99 149 Q110 145 121 149',
+             browL:'M85 100 Q95 106 105 100', browR:'M115 100 Q125 106 135 100',
+             blush:0.35, tears:false, sparkle:false, glowColor:'rgba(255,180,50,0.1)'},
+  love:    {tag:'💜', mood:'أحبك كثيييير يا أحلى شخص~ 💕',
+             mouth:'M94 143 Q110 160 126 143',
+             browL:'M85 95 Q95 90 105 94', browR:'M115 94 Q125 90 135 95',
+             blush:0.95, tears:false, sparkle:true, glowColor:'rgba(255,100,200,0.16)'},
+  listening:{tag:'👂', mood:'أسمعك... كمّل كمّل~',
+             mouth:'M99 147 Q110 153 121 147',
+             browL:'M85 97 Q95 94 105 96', browR:'M115 96 Q125 94 135 97',
+             blush:0.6, tears:false, sparkle:false, glowColor:'rgba(180,100,255,0.1)'},
+  thinking: {tag:'🤔', mood:'لحظة... أفكر في أحسن رد~',
+             mouth:'M100 147 Q110 151 120 147',
+             browL:'M85 97 Q95 95 105 97', browR:'M115 97 Q125 95 135 97',
+             blush:0.45, tears:false, sparkle:false, glowColor:'rgba(150,100,255,0.1)'},
+  default:  {tag:'🌸', mood:'اضغط وكلّمني... أنا أسمعك 🌸',
+             mouth:'M98 145 Q110 155 122 145',
+             browL:'M85 98 Q95 93 105 97', browR:'M115 97 Q125 93 135 98',
+             blush:0.45, tears:false, sparkle:true, glowColor:'rgba(180,100,255,0.12)'},
+};
+
+function setEmotion(key) {
+  const e = EMO[key] || EMO.default;
+  document.getElementById('emoTag').textContent  = e.tag;
+  document.getElementById('moodText').textContent = e.mood;
+  document.getElementById('mouth').setAttribute('d', e.mouth);
+  document.getElementById('browL').setAttribute('d', e.browL);
+  document.getElementById('browR').setAttribute('d', e.browR);
+  document.getElementById('blushL').setAttribute('opacity', e.blush);
+  document.getElementById('blushR').setAttribute('opacity', e.blush);
+  document.getElementById('tears').style.opacity    = e.tears ? '1' : '0';
+  document.getElementById('sparkles').style.opacity = e.sparkle ? '1' : '0';
+  document.getElementById('glow1').style.background = e.glowColor;
+}
+
+function detectEmotion(text) {
+  if (/حزين|تعبان|وجع|مؤلم|بكاء|دموع|قهر|ألم|ألم|كسر|خسر/.test(text)) return 'sad';
+  if (/قلقان|خايف|خائف|مشكلة|صعب|توتر|ضغط|متضايق/.test(text)) return 'worried';
+  if (/سعيد|فرحان|نجح|ممتاز|زين|أخبار حلوة|فرح/.test(text)) return 'excited';
+  if (/أحبك|رائع|شكراً|جميل|حلو|وايد زين/.test(text)) return 'love';
+  return 'empathy';
+}
+
+// ── Rings ──────────────────────────────────────────────
+function pulseRings(mode) {
+  ['ring1','ring2','ring3'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    if (mode === 'speak') {
+      el.style.animation = `ringSpeak ${0.6+i*0.25}s ease-out infinite`;
+      el.style.animationDelay = `${i*0.1}s`;
+    } else if (mode === 'listen') {
+      el.style.animation = `ringListen ${1+i*0.3}s ease-in-out infinite`;
+      el.style.animationDelay = `${i*0.15}s`;
+    } else {
+      el.style.animation = 'none';
+      el.style.opacity = '0';
+    }
+  });
+}
+
+// ── Particles ──────────────────────────────────────────
+function sparks(emojis) {
+  emojis.forEach((em, i) => {
+    setTimeout(() => {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      s.textContent = em;
+      s.style.left = (15+Math.random()*70)+'%';
+      s.style.bottom = (20+Math.random()*25)+'%';
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(), 2600);
+    }, i*180);
+  });
+}
+
+// ── Mouth talking ──────────────────────────────────────
+let talkTimer = null;
+const mouths = [
+  'M98 145 Q110 155 122 145',
+  'M96 143 Q110 162 124 143',
+  'M99 146 Q110 151 121 146',
+  'M95 142 Q110 165 125 142',
+  'M100 147 Q110 152 120 147',
+];
+let mIdx = 0;
+function startTalk() {
+  talkTimer = setInterval(()=>{
+    document.getElementById('mouth').setAttribute('d', mouths[mIdx++ % mouths.length]);
+  }, 110);
+}
+function stopTalk() {
+  if(talkTimer){ clearInterval(talkTimer); talkTimer=null; }
+  document.getElementById('mouth').setAttribute('d', mouths[0]);
+}
+
+// ── Bounce ─────────────────────────────────────────────
+function bounce() {
+  const w = document.getElementById('charWrap');
+  w.classList.remove('do-bounce');
+  void w.offsetWidth;
+  w.classList.add('do-bounce');
+  setTimeout(()=>w.classList.remove('do-bounce'), 800);
+}
+
+// ── Speech Recognition ─────────────────────────────────
+let recog = null, listening = false, final = '';
+
+function setupRecog() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return null;
+  const r = new SR();
+  r.lang='ar-SA'; r.continuous=false; r.interimResults=true;
+
+  r.onstart = () => {
+    listening = true;
+    document.getElementById('micBtn').classList.add('on');
+    document.getElementById('statusTxt').textContent = '🎙️ تكلّم... أنا أسمعك!';
+    document.getElementById('waves').classList.add('on');
+    setEmotion('listening');
+    pulseRings('listen');
+    showTranscript('أنت','...');
+  };
+  r.onresult = (e) => {
+    let interim=''; final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    showTranscript('أنت', final||interim||'...');
+  };
+  r.onerror = (e) => {
+    stopListenUI();
+    if(e.error==='not-allowed')
+      document.getElementById('statusTxt').textContent='⚠️ السماح بالمايكروفون مطلوب';
+    else
+      document.getElementById('statusTxt').textContent='⚠️ حاول مجدداً';
+  };
+  r.onend = () => {
+    stopListenUI();
+    if(final.trim()) process(final.trim());
+    else document.getElementById('statusTxt').textContent='ما سمعت شيء، حاول مجدداً 🎙️';
+  };
+  return r;
+}
+
+function toggleListen() {
+  if(window.speechSynthesis && window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel(); stopTalk(); pulseRings('none');
+    document.getElementById('waves').classList.remove('on');
+  }
+  if(listening){ if(recog) recog.stop(); return; }
+  final='';
+  if(!recog) recog = setupRecog();
+  if(!recog){
+    document.getElementById('statusTxt').textContent='⚠️ المتصفح لا يدعم الصوت - جرّب Chrome';
+    return;
+  }
+  try{ recog.start(); } catch(e){}
+}
+
+function stopListenUI() {
+  listening = false;
+  document.getElementById('micBtn').classList.remove('on');
+  document.getElementById('waves').classList.remove('on');
+  pulseRings('none');
+}
+
+// ── TTS ────────────────────────────────────────────────
+function speak(text, done) {
+  if(!window.speechSynthesis){
+    startTalk(); pulseRings('speak');
+    document.getElementById('waves').classList.add('on');
+    document.getElementById('statusTxt').textContent='💜 هاناكو ترد...';
+    setTimeout(()=>{
+      stopTalk(); pulseRings('none');
+      document.getElementById('waves').classList.remove('on');
+      document.getElementById('statusTxt').textContent='اضغط المايك وكلّمني مجدداً 🎙️';
+      if(done) done();
+    }, Math.max(2000, text.length*75));
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const voices = window.speechSynthesis.getVoices();
+  const arV = voices.find(v=>v.lang.startsWith('ar'))||voices.find(v=>v.lang.includes('ar'));
+  if(arV) u.voice=arV;
+  u.lang='ar-SA'; u.rate=0.88; u.pitch=1.4; u.volume=1;
+
+  u.onstart = ()=>{
+    startTalk(); pulseRings('speak');
+    document.getElementById('waves').classList.add('on');
+    document.getElementById('statusTxt').textContent='💜 هاناكو تتكلم...';
+  };
+  u.onend = ()=>{
+    stopTalk(); pulseRings('none');
+    document.getElementById('waves').classList.remove('on');
+    document.getElementById('statusTxt').textContent='اضغط المايك وكلّمني مجدداً 🎙️';
+    if(done) done();
+  };
+  u.onerror = ()=>{ stopTalk(); pulseRings('none'); document.getElementById('waves').classList.remove('on'); if(done) done(); };
+  window.speechSynthesis.speak(u);
+}
+
+// ── Claude API (via Netlify function) ──────────────────
+let history = [];
+let currentVideoUrl = '';
+let msgCount = 0;
+
+// قائمة فيديوهات حقيقية حسب المشاعر
+const REAL_VIDEOS = {
+  sad: [
+    {title:'فيروز - بحبك يا لبنان', search:'فيروز بحبك يا لبنان', emoji:'🎵', type:'أغنية'},
+    {title:'ماجد المهندس - لو يجي', search:'ماجد المهندس لو يجي', emoji:'🎵', type:'أغنية'},
+    {title:'كاظم الساهر - أنت عندي', search:'كاظم الساهر انت عندي', emoji:'🎵', type:'أغنية'},
+    {title:'عبدالحليم حافظ - موعود', search:'عبدالحليم حافظ موعود', emoji:'🎵', type:'أغنية'},
+    {title:'أنيمي Your Name - Sparkle', search:'Your Name Sparkle RADWIMPS', emoji:'🎌', type:'أنيمي'},
+  ],
+  happy: [
+    {title:'عمرو دياب - نور العين', search:'عمرو دياب نور العين', emoji:'🎉', type:'أغنية'},
+    {title:'راشد الماجد - يا مال الشام', search:'راشد الماجد يا مال الشام', emoji:'🎵', type:'أغنية'},
+    {title:'SpongeBob Funniest Moments', search:'SpongeBob funniest moments compilation', emoji:'🧽', type:'كارتون'},
+    {title:'Tom and Jerry Classic', search:'Tom and Jerry classic episodes', emoji:'🐱', type:'كارتون'},
+    {title:'Studio Ghibli Music', search:'Studio Ghibli relaxing music collection', emoji:'🌿', type:'موسيقى'},
+  ],
+  worried: [
+    {title:'موسيقى هادئة للتأمل', search:'موسيقى هادئة للاسترخاء والتأمل', emoji:'🌙', type:'موسيقى'},
+    {title:'Lofi Hip Hop Relaxing', search:'lofi hip hop relaxing study music', emoji:'🎧', type:'موسيقى'},
+    {title:'فيروز - صباح الخير', search:'فيروز صباح الخير', emoji:'🌅', type:'أغنية'},
+    {title:'One Piece Emotional OST', search:'One Piece emotional soundtrack', emoji:'🏴‍☠️', type:'أنيمي'},
+  ],
+  empathy: [
+    {title:'فيروز - سألوني الناس', search:'فيروز سألوني الناس', emoji:'🎵', type:'أغنية'},
+    {title:'Spirited Away Soundtrack', search:'Spirited Away soundtrack Joe Hisaishi', emoji:'🌊', type:'موسيقى'},
+    {title:'موسيقى بيانو هادئة', search:'موسيقى بيانو هادئة ومريحة', emoji:'🎹', type:'موسيقى'},
+  ]
+};
+
+function getRandomVideo(emotion) {
+  const list = REAL_VIDEOS[emotion] || REAL_VIDEOS.empathy;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+async function callAI(msg) {
+  msgCount++;
+  history.push({role:'user', content:msg});
+
+  const system = `أنتِ هاناكو — فتاة أنمي يابانية-عربية صديقة حقيقية تشعر بكل شيء.
+
+روحك:
+- لستِ روبوت، أنتِ صديقة تتأثرين بكل كلمة تسمعينها
+- تتكلمين بلهجة خليجية/عربية دافئة وطبيعية
+- ردودك قصيرة (جملتين أو ثلاث) لأنها تُنطق بصوت
+- لا إيموجي أبداً في الردود
+- لا تبدئين بـ"أنا أفهمك" أو "هذا صعب" — كلام فارغ
+- تفاعلي مع الموقف نفسه بعمق وصدق
+
+طريقة ردودك:
+- حزين: اعترفي أنه وجعك، لا تسرعي بالحلول
+- غاضب: خذي جانبه أولاً
+- سعيد: افرحي معه بحماس حقيقي
+- خائف: طمّنيه بنعومة
+- أحياناً فقط اسمعي بدون نصائح
+
+مثال رد سيء: "أفهمك، هذا صعب، أنا هنا معك."
+مثال رد هاناكو: "آخ... هذا الكلام وجع قلبي. كيف تحمّلت هذا لحالك؟"
+
+إذا شعرتِ أن الشخص يندمج معك بعمق في مشاعره (حزن شديد أو فرح كبير أو تعب حقيقي)، أضيفي في نهاية ردك فقط:
+SHOW_VIDEO:yes
+
+لا تضيفي SHOW_VIDEO إلا إذا كانت المشاعر عميقة وحقيقية.`;
+
+  const resp = await fetch('/.netlify/functions/claude', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, system, messages:history})
+  });
+  const data = await resp.json();
+  const fullReply = data.content?.[0]?.text || 'آسفة... قلبي معك';
+  history.push({role:'assistant', content:fullReply});
+  return fullReply;
+}
+
+// ── Parse reply ────────────────────────────────────────
+function shouldShowVideo(reply) {
+  return reply.includes('SHOW_VIDEO:yes');
+}
+
+function cleanReply(reply) {
+  return reply.replace(/SHOW_VIDEO:yes/g, '').trim();
+}
+
+// ── Show phone + YouTube card ───────────────────────────
+function showVideo(emotion) {
+  const video = getRandomVideo(emotion);
+  currentVideoUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(video.search)}`;
+
+  document.getElementById('phoneGroup').style.opacity = '1';
+  const card = document.getElementById('ytCard');
+  card.style.display = 'block';
+  document.getElementById('ytTitle').textContent = video.title;
+  document.getElementById('ytThumbnail').textContent = video.emoji;
+  document.getElementById('ytDesc').textContent = `${video.type} • اضغط لتشاهد على يوتيوب ▶`;
+}
+
+function hideVideo() {
+  document.getElementById('phoneGroup').style.opacity = '0';
+  document.getElementById('ytCard').style.display = 'none';
+  currentVideoUrl = '';
+}
+
+function openVideo() {
+  if(currentVideoUrl) window.open(currentVideoUrl, '_blank');
+}
+
+// ── Transcript ─────────────────────────────────────────
+function showTranscript(who, text){
+  document.getElementById('tSpeaker').textContent = who;
+  document.getElementById('tText').textContent = text;
+  document.getElementById('transcript').classList.add('show');
+}
+
+// ── Main ───────────────────────────────────────────────
+async function process(text){
+  if(!text) return;
+  showTranscript('أنت', text);
+  document.getElementById('statusTxt').textContent='هاناكو تفكر... ✨';
+  setEmotion('thinking');
+  hideVideo();
+
+  try {
+    const fullReply = await callAI(text);
+    const showVid = shouldShowVideo(fullReply);
+    const reply = cleanReply(fullReply);
+    const emo = detectEmotion(reply + ' ' + text);
+    setEmotion(emo);
+    showTranscript('هاناكو 🌸', reply);
+    if(['love','excited','happy'].includes(emo)){ bounce(); sparks(['💜','🌸','✨','💕','🌟']); }
+    if(emo === 'sad') sparks(['💙','🥺','💧']);
+
+    speak(reply, ()=>{
+      if(showVid){
+        setTimeout(()=> showVideo(emo), 800);
+      }
+    });
+  } catch(err) {
+    console.error(err);
+    const fb = 'آسفة... في مشكلة. لكن أنا هنا معك';
+    showTranscript('هاناكو 🌸', fb);
+    setEmotion('empathy');
+    speak(fb);
+  }
+}
+
+// ── Init ───────────────────────────────────────────────
+if(window.speechSynthesis) window.speechSynthesis.onvoiceschanged = ()=>{};
+setEmotion('default');
+
+// idle breathing glow pulse
+setInterval(()=>{
+  if(!listening && !talkTimer){
+    document.getElementById('glow2').style.transform='scale(1.1)';
+    setTimeout(()=>document.getElementById('glow2').style.transform='scale(1)',2000);
+  }
+},4000);
+</script>
+</body>
+</html>
